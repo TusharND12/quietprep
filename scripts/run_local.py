@@ -1,5 +1,6 @@
 """Start the downloaded local model and QuietPrep. Ctrl-C stops both."""
 
+import argparse
 import os
 from pathlib import Path
 import signal
@@ -10,13 +11,19 @@ import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from models import MODELS
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", choices=MODELS, default="coaching")
+    args = parser.parse_args()
+    selected = MODELS[args.model]
     candidates = list((ROOT / ".runtime" / "llama").rglob("llama-server"))
-    model = ROOT / ".runtime" / "qwen2.5-1.5b-instruct-q4_k_m.gguf"
+    model = ROOT / ".runtime" / selected["filename"]
     if not candidates or not model.exists():
-        raise SystemExit("Run python3 scripts/setup_local.py first.")
+        raise SystemExit(f"Run python3 scripts/setup_local.py --model {args.model} first.")
     executable = candidates[0]
     environment = os.environ.copy()
     environment["LD_LIBRARY_PATH"] = str(executable.parent)
@@ -38,8 +45,8 @@ def main():
         log = (ROOT / ".runtime" / "model.log").open("w")
         children.append(subprocess.Popen([
             str(executable), "-m", str(model), "--host", "127.0.0.1",
-            "--port", "8091", "-c", "4096", "-t", "6", "-ngl", "0",
-            "--alias", "qwen2.5:1.5b", "--no-webui", "--no-slots",
+            "--port", "8091", "-c", "6144", "-t", "6", "-ngl", "0",
+            "--alias", selected["alias"], "--no-webui", "--no-slots",
             "--cors-origins", "http://127.0.0.1:8767", "--log-verbosity", "1",
         ], env=environment, stdout=log, stderr=log))
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -55,6 +62,7 @@ def main():
             raise SystemExit("Model startup timed out; check .runtime/model.log.")
         environment["QUIETPREP_BACKEND"] = "llama"
         environment["QUIETPREP_MODEL_URL"] = "http://127.0.0.1:8091"
+        environment["QUIETPREP_MODEL"] = selected["alias"]
         children.append(subprocess.Popen([sys.executable, str(ROOT / "server.py")], env=environment))
         while all(child.poll() is None for child in children):
             time.sleep(0.5)

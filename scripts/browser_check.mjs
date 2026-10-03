@@ -24,6 +24,11 @@ const record = process.argv.includes("--record");
 let recording = false;
 let frame = 0;
 let recorder;
+const recordingDir = resolve(".runtime/frames", String(Date.now()));
+const stages = [];
+function stage(label) {
+  if (record) stages.push({ frame, label });
+}
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
   if (data.method === "Runtime.exceptionThrown")
@@ -89,6 +94,17 @@ async function screenshot(name) {
   });
   await writeFile(`artifacts/${name}.png`, Buffer.from(shot.data, "base64"));
 }
+async function screenshotElement(id, name) {
+  const clip = await evaluate(
+    `(() => { const box = document.getElementById(${JSON.stringify(id)}).getBoundingClientRect(); return {x: box.x + scrollX, y: box.y + scrollY, width: box.width, height: box.height, scale: 1}; })()`,
+  );
+  const shot = await cdp("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: true,
+    clip,
+  });
+  await writeFile(`artifacts/${name}.png`, Buffer.from(shot.data, "base64"));
+}
 await screenshot("desktop");
 await evaluate(
   'document.querySelector("#example-button").click(); document.querySelector("#answer-form").requestSubmit();',
@@ -103,11 +119,18 @@ assert.match(
   /observation/,
 );
 await evaluate(
-  'document.querySelector("#clear-session").click(); document.querySelector("input[value=project]").checked = true; document.querySelector("#context").value = "I built a React search interface for a college library.";',
+  'document.querySelector("#clear-session").click(); document.querySelector("input[value=project]").checked = true; document.querySelector("#story-problem").value = "Our college library search sent a request on every keystroke."; document.querySelector("#story-action").value = "I built the React interface and added a debounce."; document.querySelector("#story-result").value = "Network requests happened after a pause instead of each keystroke."; document.querySelector("#use-story").click();',
+);
+assert.match(
+  await evaluate('document.querySelector("#context").value'),
+  /My action: I built/,
 );
 if (record) {
-  await mkdir(".runtime/frames", { recursive: true });
+  await mkdir(recordingDir, { recursive: true });
   recording = true;
+  stage(
+    "QuietPrep: private interview practice | Synthetic example with local AI",
+  );
   recorder = (async () => {
     while (recording) {
       const shot = await cdp("Page.captureScreenshot", {
@@ -115,7 +138,7 @@ if (record) {
         captureBeyondViewport: false,
       });
       await writeFile(
-        `.runtime/frames/demo_${String(frame++).padStart(4, "0")}.png`,
+        `${recordingDir}/demo_${String(frame++).padStart(4, "0")}.png`,
         Buffer.from(shot.data, "base64"),
       );
       await delay(500);
@@ -137,9 +160,10 @@ assert.equal(
 const question = await evaluate(
   'document.querySelector("#question").textContent',
 );
+stage("1. Answer one question using your own experience");
 assert.ok(question.length > 20);
 const answer =
-  "In my college project, the search results were loading slowly. I checked the network tab and noticed we fetched the whole list on every keystroke. I added a debounce so the request waited until typing paused. That reduced duplicate requests. I learned to measure the problem before changing the code.";
+  "In my college project, I built a library search form in React. I noticed it sent a request on each keystroke. I added a 300 millisecond debounce. I used the Network tab to check requests. I learned to test a change before calling it finished.";
 await evaluate(
   `document.querySelector("#answer").value = ${JSON.stringify(answer)}; document.querySelector("#answer").dispatchEvent(new Event("input")); document.querySelector("#answer-form").requestSubmit();`,
 );
@@ -163,6 +187,7 @@ await writeFile(
   JSON.stringify({ question, answer, feedback }, null, 2),
 );
 await screenshot("live-feedback");
+stage("2. Read one nudge, with evidence from your original answer");
 if (record) {
   await evaluate(
     'document.querySelector("#feedback").scrollIntoView({block:"center"})',
@@ -177,7 +202,8 @@ assert.match(
 );
 const secondAnswer =
   answer +
-  " After adding the debounce, I typed the same query and checked the Network tab again. A request was sent after I paused typing, rather than after each keystroke.";
+  " With the same query, I counted 36 requests before and one request after the change. I checked that keyboard navigation still worked. I have not tested whether users prefer the change.";
+stage("3. Retry the same question; earlier coaching is carried forward");
 await evaluate(
   `document.querySelector("#answer").value = ${JSON.stringify(secondAnswer)}; document.querySelector("#answer").dispatchEvent(new Event("input")); document.querySelector("#answer-form").requestSubmit();`,
 );
@@ -195,16 +221,66 @@ const secondQuote = await evaluate(
   'document.querySelector("#evidence").textContent',
 );
 assert.ok(secondQuote && secondAnswer.includes(secondQuote));
-await mkdir(".runtime/downloads", { recursive: true });
+assert.equal(
+  await evaluate('document.querySelector("#progress-panel").hidden'),
+  false,
+);
+assert.equal(
+  await evaluate('document.querySelector("#before-answer").textContent'),
+  answer,
+);
+assert.equal(
+  await evaluate('document.querySelector("#after-answer").textContent'),
+  secondAnswer,
+);
+assert.match(
+  await evaluate('document.querySelector("#change-count").textContent'),
+  /added/,
+);
+stage("4. See exact word changes before asking AI to interpret them");
+await evaluate(
+  'document.querySelector("#progress-panel").scrollIntoView({block:"center"})',
+);
+if (record) await delay(2500);
+await evaluate('document.querySelector("#compare-button").click()');
+await until('document.querySelector("#busy").hidden', 190);
+assert.equal(
+  await evaluate('document.querySelector("#comparison-error").hidden'),
+  true,
+  await evaluate('document.querySelector("#comparison-error").textContent'),
+);
+assert.equal(
+  await evaluate('document.querySelector("#comparison").hidden'),
+  false,
+);
+assert.ok(
+  answer.includes(
+    await evaluate('document.querySelector("#comparison-before").textContent'),
+  ),
+);
+assert.ok(
+  secondAnswer.includes(
+    await evaluate('document.querySelector("#comparison-after").textContent'),
+  ),
+);
+await screenshot("comparison");
+await screenshotElement("progress-panel", "comparison-detail");
+stage("5. Inspect AI reflection: evidence comes from both original answers");
+if (record) await delay(3500);
+await evaluate(
+  'document.querySelector("[data-usefulness=partly]").click(); document.querySelector("#usefulness-note").value = "Synthetic test reflection: the quotation was useful; I still need to check the advice."; document.querySelector("#usefulness-note").dispatchEvent(new Event("input"));',
+);
+const downloadDir = resolve(".runtime/downloads", String(Date.now()));
+await mkdir(downloadDir, { recursive: true });
 await cdp("Browser.setDownloadBehavior", {
   behavior: "allow",
-  downloadPath: resolve(".runtime/downloads"),
+  downloadPath: downloadDir,
 });
 await evaluate('document.querySelector("#download").click()');
 let exported;
 for (let attempt = 0; attempt < 40; attempt++) {
   try {
-    exported = await readFile(".runtime/downloads/quietprep-notes.md", "utf8");
+    exported = await readFile(`${downloadDir}/quietprep-notes.md`, "utf8");
     break;
   } catch {
     await delay(250);
@@ -214,10 +290,13 @@ assert.ok(
   exported?.includes("### Attempt 1") && exported.includes("### Attempt 2"),
 );
 assert.ok(exported.includes(secondAnswer));
+assert.ok(exported.includes("### AI reflection"));
+assert.ok(exported.includes("**My reflection:** partly"));
 await writeFile("artifacts/sample-notes.md", exported);
+stage("6. Download both attempts, coaching, and your own reflection");
 if (record) {
   await evaluate(
-    'document.querySelector("#feedback").scrollIntoView({block:"center"})',
+    'document.querySelector("#progress-panel").scrollIntoView({block:"center"})',
   );
   await delay(4000);
 }
@@ -225,6 +304,14 @@ if (record) {
   await delay(2000);
   recording = false;
   await recorder;
+  await writeFile(
+    ".runtime/recording.json",
+    JSON.stringify(
+      { directory: recordingDir, frames: frame, fps: 2, stages },
+      null,
+      2,
+    ),
+  );
 }
 await cdp("Emulation.setDeviceMetricsOverride", {
   width: 390,
@@ -251,11 +338,23 @@ assert.equal(
   await evaluate('document.querySelector("#evidence").textContent'),
   "",
 );
+assert.equal(
+  await evaluate('document.querySelector("#comparison-before").textContent'),
+  "",
+);
+assert.equal(
+  await evaluate('document.querySelector("#story-action").value'),
+  "",
+);
+assert.equal(
+  await evaluate('document.querySelector("#usefulness-note").value'),
+  "",
+);
 assert.equal(await evaluate("localStorage.length"), 0);
 assert.deepEqual(failures, []);
 assert.deepEqual(externalRequests, []);
 console.log(
-  "PASS: live AI question and two reviews, grounded quotes, example label, retry, both attempts exported, clear, no localStorage, mobile layout, setup dialog, no browser errors or external browser requests.",
+  "PASS: story context, live AI question and two reviews, exact word changes, comparison grounded in both attempts, example label, retry, notes with comparison, clear, mobile layout, no browser errors or external browser requests.",
 );
-if (record) console.log(`Recorded ${frame} frames in .runtime/frames (2 fps).`);
+if (record) console.log(`Recorded ${frame} frames in ${recordingDir} (2 fps).`);
 socket.close();

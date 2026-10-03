@@ -1,4 +1,5 @@
 "use strict";
+import { wordChanges } from "./changes.js";
 const $ = (id) => document.getElementById(id);
 const state = {
   question: null,
@@ -8,6 +9,8 @@ const state = {
   busy: false,
   example: false,
   settings: null,
+  comparison: null,
+  compareIndex: 0,
 };
 const EXAMPLE = {
   question:
@@ -48,7 +51,7 @@ function busy(active, title = "") {
   $("busy-title").textContent = title;
   document
     .querySelectorAll(
-      "form input, form textarea, form button, #new-question, #example-button, #retry, #next, #clear-session",
+      "form input, form textarea, form button, #new-question, #example-button, #retry, #next, #clear-session, #compare-button, #compare-source, #download, .usefulness button, #usefulness-note",
     )
     .forEach((element) => {
       element.disabled = active;
@@ -94,9 +97,12 @@ function showQuestion(question, example = false) {
   state.feedback = null;
   state.attempts = [];
   state.example = example;
+  state.comparison = null;
+  state.compareIndex = 0;
   $("idle-view").hidden = true;
   $("session-view").hidden = false;
   $("feedback").hidden = true;
+  $("progress-panel").hidden = true;
   $("example-label").hidden = !example;
   $("question").textContent = question.question;
   $("why-this").textContent = question.why_this;
@@ -147,6 +153,12 @@ function showFeedback(feedback) {
     $(id).textContent = feedback[key];
   }
   $("feedback").hidden = false;
+  $("usefulness").hidden = state.example;
+  document
+    .querySelectorAll("[data-usefulness]")
+    .forEach((button) => button.setAttribute("aria-pressed", "false"));
+  $("usefulness-note").value = "";
+  renderProgress();
   $("feedback").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 async function review(event) {
@@ -167,12 +179,20 @@ async function review(event) {
         );
       showFeedback(EXAMPLE_FEEDBACK);
     } else {
+      const previous = state.attempts.at(-1);
       const feedback = await request("/api/review", {
         ...state.settings,
         question: state.question.question,
         answer,
+        ...(previous
+          ? {
+              previous_answer: previous.answer,
+              previous_improvement: previous.feedback.improvement,
+            }
+          : {}),
       });
       state.attempts.push({ answer, feedback });
+      state.comparison = null;
       showFeedback(feedback);
     }
   } catch (exception) {
@@ -180,6 +200,93 @@ async function review(event) {
   } finally {
     busy(false);
   }
+}
+function renderWords(id, segments, kind) {
+  const target = $(id);
+  target.replaceChildren();
+  for (const segment of segments) {
+    const node = document.createElement(segment.changed ? "mark" : "span");
+    if (segment.changed) node.className = kind;
+    node.textContent = segment.text;
+    target.append(node);
+  }
+}
+function renderProgress() {
+  const visible = !state.example && state.attempts.length >= 2;
+  $("progress-panel").hidden = !visible;
+  if (!visible) return;
+  const select = $("compare-source");
+  select.replaceChildren();
+  for (let i = 0; i < state.attempts.length - 1; i++) {
+    const option = document.createElement("option");
+    option.value = String(i);
+    option.textContent = `Attempt ${i + 1}`;
+    select.append(option);
+  }
+  select.value = String(state.compareIndex);
+  const before = state.attempts[state.compareIndex].answer;
+  const after = state.attempts.at(-1).answer;
+  const changes = wordChanges(before, after);
+  renderWords("before-answer", changes.before, "removed-word");
+  renderWords("after-answer", changes.after, "added-word");
+  $("before-title").textContent = `Attempt ${state.compareIndex + 1}`;
+  $("after-title").textContent = `Attempt ${state.attempts.length}`;
+  $("change-count").textContent =
+    `${changes.added} added · ${changes.removed} removed`;
+  $("comparison-goal").textContent =
+    `Earlier nudge: ${state.attempts[state.compareIndex].feedback.improvement}`;
+  $("comparison").hidden = !state.comparison;
+  $("comparison-error").hidden = true;
+}
+async function compareAttempts() {
+  if (state.busy || state.attempts.length < 2) return;
+  const before = state.attempts[state.compareIndex];
+  const after = state.attempts.at(-1);
+  $("comparison-error").hidden = true;
+  busy(true, "Looking at what changed between your attempts…");
+  try {
+    const result = await request("/api/compare", {
+      ...state.settings,
+      question: state.question.question,
+      before: before.answer,
+      after: after.answer,
+      goal: before.feedback.improvement,
+    });
+    state.comparison = result;
+    $("comparison-label").textContent =
+      before.answer === after.answer
+        ? "NO WORD CHANGES"
+        : "AI REFLECTION · QUOTES CHECKED";
+    $("comparison-summary").textContent = result.summary;
+    $("comparison-before").textContent = result.before_quote;
+    $("comparison-after").textContent = result.after_quote;
+    $("comparison-next").textContent = result.next_step;
+    $("comparison").hidden = false;
+    $("comparison").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (exception) {
+    $("comparison-error").textContent = exception.message;
+    $("comparison-error").hidden = false;
+  } finally {
+    busy(false);
+  }
+}
+function useStory() {
+  const fields = [
+    ["Problem", "story-problem"],
+    ["My action", "story-action"],
+    ["Outcome or learning", "story-result"],
+  ];
+  const parts = fields
+    .map(([label, id]) =>
+      $(id).value.trim() ? `${label}: ${$(id).value.trim()}` : "",
+    )
+    .filter(Boolean);
+  if (!parts.length) {
+    $("story-problem").focus();
+    return;
+  }
+  $("context").value = parts.join("\n");
+  $("context").focus();
 }
 function retry() {
   if (state.example) {
@@ -220,7 +327,31 @@ function download() {
       "**Follow-up:** " + attempt.feedback.follow_up,
       "",
     );
+    if (attempt.usefulness)
+      notes.push(`**My reflection:** ${attempt.usefulness}`, "");
+    if (attempt.usefulness_note) notes.push(attempt.usefulness_note, "");
   });
+  if (state.attempts.length >= 2 && !state.example) {
+    const changes = wordChanges(
+      state.attempts[state.compareIndex].answer,
+      state.attempts.at(-1).answer,
+    );
+    notes.push(
+      "## What changed",
+      `Compared attempt ${state.compareIndex + 1} with attempt ${state.attempts.length}.`,
+      `${changes.added} words added; ${changes.removed} words removed. These counts are not a quality score.`,
+      "",
+    );
+  }
+  if (state.comparison)
+    notes.push(
+      "### AI reflection",
+      state.comparison.summary,
+      `Before: ${state.comparison.before_quote}`,
+      `Now: ${state.comparison.after_quote}`,
+      state.comparison.next_step,
+      "",
+    );
   notes.push(
     "AI coaching is a practice aid, not a hiring verdict. Verify technical advice.",
   );
@@ -260,8 +391,13 @@ function clearSession() {
   state.attempts = [];
   state.settings = null;
   state.example = false;
+  state.comparison = null;
+  state.compareIndex = 0;
   $("answer").value = "";
   $("context").value = "";
+  $("usefulness-note").value = "";
+  for (const id of ["story-problem", "story-action", "story-result"])
+    $(id).value = "";
   for (const id of [
     "question",
     "why-this",
@@ -271,10 +407,20 @@ function clearSession() {
     "improvement",
     "next-try",
     "follow-up",
+    "before-answer",
+    "after-answer",
+    "comparison-summary",
+    "comparison-before",
+    "comparison-after",
+    "comparison-next",
+    "comparison-error",
+    "comparison-goal",
   ])
     $(id).textContent = "";
   $("session-view").hidden = true;
   $("feedback").hidden = true;
+  $("progress-panel").hidden = true;
+  $("comparison").hidden = true;
   $("idle-view").hidden = false;
   wordCount();
   error();
@@ -298,6 +444,28 @@ $("setup-open").addEventListener("click", () => {
 });
 $("setup-close").addEventListener("click", () => $("setup-dialog").close());
 $("check-model").addEventListener("click", checkModel);
+$("use-story").addEventListener("click", useStory);
+$("compare-button").addEventListener("click", compareAttempts);
+$("compare-source").addEventListener("change", () => {
+  state.compareIndex = Number($("compare-source").value);
+  state.comparison = null;
+  renderProgress();
+});
+document.querySelectorAll("[data-usefulness]").forEach((button) =>
+  button.addEventListener("click", () => {
+    if (state.busy || state.example || !state.attempts.length) return;
+    state.attempts.at(-1).usefulness = button.dataset.usefulness;
+    document
+      .querySelectorAll("[data-usefulness]")
+      .forEach((item) =>
+        item.setAttribute("aria-pressed", String(item === button)),
+      );
+  }),
+);
+$("usefulness-note").addEventListener("input", () => {
+  if (!state.example && state.attempts.length)
+    state.attempts.at(-1).usefulness_note = $("usefulness-note").value;
+});
 window.addEventListener("beforeunload", (event) => {
   if (!state.example && $("answer").value.trim()) {
     event.preventDefault();

@@ -34,7 +34,7 @@ class ValidationTests(unittest.TestCase):
     def test_quote_from_the_answer_is_accepted(self):
         answer = "I compared two page layouts with my team before choosing one."
         result = {key: "A short coaching note" for key in server.REVIEW_SCHEMA["required"]}
-        result["evidence"] = "I compared two page layouts"
+        result["evidence"] = "E1"
         with patch.object(server, "infer", return_value=result):
             actual = server.review_answer({**VALID, "question": "Tell me about teamwork.", "answer": answer})
         self.assertIn(actual["evidence"], answer)
@@ -59,6 +59,59 @@ class ValidationTests(unittest.TestCase):
     def test_previous_questions_are_bounded(self):
         with self.assertRaises(server.AppError):
             server.make_question({**VALID, "previous": ["question"] * 9})
+
+    def test_retry_carries_the_previous_answer_and_goal(self):
+        answer = "I compared two page layouts with my team before choosing one."
+        result = {key: "A coaching note" for key in server.REVIEW_SCHEMA["required"]}
+        result["evidence"] = "E1"
+        with patch.object(server, "infer", return_value=result) as model:
+            server.review_answer({**VALID, "question": "Tell me about teamwork.", "answer": answer,
+                                  "previous_answer": "We worked together on a college project.", "previous_improvement": "Name your own action."})
+        supplied = model.call_args.args[1]
+        self.assertEqual(supplied["previous_answer"], "We worked together on a college project.")
+        self.assertEqual(supplied["previous_improvement"], "Name your own action.")
+
+    def test_comparison_must_quote_both_actual_attempts(self):
+        before = "We worked together on a college project."
+        after = "I compared two page layouts with my team before choosing one."
+        result = {"summary": "You named your contribution.", "before_quote": "B1", "after_quote": "A1", "next_step": "Explain the outcome."}
+        data = {**VALID, "question": "Tell me about teamwork.", "before": before, "after": after, "goal": "Name your action."}
+        with patch.object(server, "infer", return_value=result.copy()):
+            actual = server.compare_answers(data)
+        self.assertIn(actual["before_quote"], before)
+        self.assertIn(actual["after_quote"], after)
+        for key in ["before_quote", "after_quote"]:
+            invalid = {**result, key: "I improved conversions by 40%."}
+            with self.subTest(key=key), patch.object(server, "infer", return_value=invalid), self.assertRaises(server.AppError):
+                server.compare_answers(data)
+
+    def test_identical_attempts_cannot_claim_model_generated_progress(self):
+        answer = "We worked together on a college project."
+        with patch.object(server, "infer") as model:
+            actual = server.compare_answers({**VALID, "question": "Tell me about teamwork.", "before": answer, "after": answer, "goal": "Name your action."})
+        model.assert_not_called()
+        self.assertIn("no change", actual["summary"])
+
+    def test_previous_attempt_and_comparison_bounds(self):
+        for extra in [{"previous_answer": [], "previous_improvement": "Name an action."}, {"previous_answer": "x" * 4001, "previous_improvement": "Name an action."}, {"previous_answer": "A previous answer of sufficient length.", "previous_improvement": {}}]:
+            with self.subTest(extra=extra), self.assertRaises(server.AppError):
+                server.review_answer({**VALID, "question": "Tell me about teamwork.", "answer": "An answer with more than twenty characters.", **extra})
+
+    def test_evidence_choices_never_rewrite_source_text(self):
+        for answer in ["We used React. I tested it. It worked.", "A long " + "word " * 100 + "ending.", "x" * 500, "I changed a 0.5 second delay.\nThen I tested keyboard navigation."]:
+            with self.subTest(answer=answer[:30]):
+                options = server.evidence_options(answer, "E")
+                self.assertTrue(options)
+                self.assertTrue(all(0 < len(quote) <= 180 and quote in answer for quote in options.values()))
+
+    def test_model_can_only_select_evidence_from_current_answer(self):
+        answer = "I compared two layouts. We chose the simpler one."
+        result = {key: "A coaching note" for key in server.REVIEW_SCHEMA["required"]}
+        result["evidence"] = "E2"
+        with patch.object(server, "infer", return_value=result) as model:
+            actual = server.review_answer({**VALID, "question": "Tell me about teamwork.", "answer": answer})
+        self.assertEqual(actual["evidence"], "We chose the simpler one.")
+        self.assertEqual(model.call_args.args[2]["properties"]["evidence"]["enum"], ["E1", "E2"])
 
 
 class HTTPTests(unittest.TestCase):

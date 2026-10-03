@@ -7,7 +7,7 @@
     <title>QuietPrep — A little practice. A little more confidence.</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/style.css" />
-    <script defer src="/app.js"></script>
+    <script type="module" src="/app.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to practice</a>
@@ -105,6 +105,36 @@
             <p class="input-note">
               Share only what you feel comfortable sharing.
             </p>
+            <details class="story-helper">
+              <summary>Find a real example to talk about</summary>
+              <p>
+                A class assignment, volunteer task, or personal project is
+                enough. You do not need a job title to have a useful story.
+              </p>
+              <label for="story-problem">What needed fixing?</label>
+              <input
+                id="story-problem"
+                maxlength="500"
+                placeholder="The search page felt slow…"
+              />
+              <label for="story-action">What did you personally do?</label>
+              <input
+                id="story-action"
+                maxlength="700"
+                placeholder="I checked requests and added a debounce…"
+              />
+              <label for="story-result"
+                >What happened or what did you learn?</label
+              >
+              <input
+                id="story-result"
+                maxlength="700"
+                placeholder="Only what you actually observed. It’s OK not to have numbers."
+              />
+              <button class="secondary full" id="use-story" type="button">
+                Use this as my context
+              </button>
+            </details>
             <button class="primary full" id="start-button" type="submit">
               Let’s practise <span aria-hidden="true">→</span>
             </button>
@@ -209,12 +239,113 @@
                   <h4>Try this next</h4>
                   <p id="improvement"></p>
                   <p id="next-try" class="next-try"></p>
+                  <p class="honesty-note">
+                    Use what really happened. “I haven’t measured that yet” is a
+                    valid answer.
+                  </p>
                 </div>
               </div>
               <div class="follow-up">
                 <p class="eyebrow">SOMETHING TO THINK ABOUT</p>
                 <p id="follow-up"></p>
               </div>
+              <div id="usefulness" class="usefulness" hidden>
+                <p>Did this nudge give you a useful next step?</p>
+                <div
+                  class="usefulness-options"
+                  role="group"
+                  aria-label="Was this coaching useful?"
+                >
+                  <button
+                    type="button"
+                    data-usefulness="helped"
+                    aria-pressed="false"
+                  >
+                    Yes, it helped
+                  </button>
+                  <button
+                    type="button"
+                    data-usefulness="partly"
+                    aria-pressed="false"
+                  >
+                    Partly
+                  </button>
+                  <button
+                    type="button"
+                    data-usefulness="not-yet"
+                    aria-pressed="false"
+                  >
+                    Not yet
+                  </button>
+                </div>
+                <label for="usefulness-note"
+                  >What helped, or what should change?
+                  <span class="optional"
+                    >Optional · for your downloaded notes</span
+                  ></label
+                >
+                <textarea
+                  id="usefulness-note"
+                  maxlength="500"
+                  rows="2"
+                  placeholder="e.g. The suggestion was specific, but it missed a result I already explained."
+                ></textarea>
+              </div>
+              <section
+                id="progress-panel"
+                class="progress-panel"
+                aria-labelledby="progress-title"
+                hidden
+              >
+                <div class="progress-heading">
+                  <div>
+                    <p class="eyebrow">YOUR WORDS, SIDE BY SIDE</p>
+                    <h4 id="progress-title">See what you changed</h4>
+                  </div>
+                  <span id="change-count" class="change-count"></span>
+                </div>
+                <label for="compare-source"
+                  >Compare your latest attempt with</label
+                >
+                <select id="compare-source"></select>
+                <div class="answer-pair">
+                  <div>
+                    <h5 id="before-title">First attempt</h5>
+                    <p id="before-answer"></p>
+                  </div>
+                  <div>
+                    <h5 id="after-title">Latest attempt</h5>
+                    <p id="after-answer"></p>
+                  </div>
+                </div>
+                <p class="progress-note">
+                  Highlighted words were added or removed. A longer answer is
+                  not automatically a better one.
+                </p>
+                <p id="comparison-goal" class="comparison-goal"></p>
+                <button id="compare-button" class="secondary full">
+                  Reflect on this change with local AI ↗
+                </button>
+                <p
+                  id="comparison-error"
+                  class="comparison-error"
+                  role="alert"
+                  hidden
+                ></p>
+                <div id="comparison" class="comparison" hidden>
+                  <p class="eyebrow" id="comparison-label">
+                    AI REFLECTION · QUOTES CHECKED
+                  </p>
+                  <p id="comparison-summary"></p>
+                  <dl>
+                    <dt>Before</dt>
+                    <dd id="comparison-before"></dd>
+                    <dt>Now</dt>
+                    <dd id="comparison-after"></dd>
+                  </dl>
+                  <p id="comparison-next"></p>
+                </div>
+              </section>
               <div class="feedback-actions">
                 <button class="primary" id="retry">Try my answer again ↻</button
                 ><button class="secondary" id="next">Next question →</button>
@@ -261,7 +392,11 @@
 python3 scripts/setup_local.py
 python3 scripts/run_local.py</pre
       >
-      <p class="muted">First setup downloads about 1.14 GB. No GPU required.</p>
+      <p class="muted">
+        Recommended coaching model: about 2.52 GB to download and 5 GB free RAM.
+        No GPU required. Add <code>--model compact</code> to both commands for
+        the smaller 1.12 GB model.
+      </p>
       <h3>Already using Ollama?</h3>
       <pre>
 ollama pull qwen2.5:1.5b
