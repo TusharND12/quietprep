@@ -1,7 +1,8 @@
 ---
 title: QuietPrep — helping my friend Nilesh approach practice with more confidence
-published: false
+published: true
 tags: devchallenge, weekendchallenge, hf26challenge
+canonical_url: https://dev.to/tushar_dhokane_b6452dc29d/quietprep-helping-my-friend-nilesh-approach-practice-with-more-confidence-2fo6
 ---
 
 _This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)._

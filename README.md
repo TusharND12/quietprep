@@ -2,7 +2,7 @@
 
 QuietPrep is a private interview practice partner for someone preparing for an early-career job. Build a story from your real experience, answer one question, and get a specific next step. Retry the answer and see your actual word changes side by side. Local open-weight inference needs no cloud API, account, or internet after setup.
 
-Built starting 3 October 2026 for the [Hacktoberfest Build for a Friend challenge](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). The project owner reports that their friend Nilesh, who is preparing for GATE, has used QuietPrep and feels more confident and less afraid. This is a personal account; exam performance has not been measured. QuietPrep currently supports interview-style communication practice, with GATE syllabus coverage and mock-exam scoring outside its scope. This repository does not claim a completed challenge submission or a prize.
+Built starting 3 October 2026 for the [Hacktoberfest Build for a Friend challenge](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). The project owner reports that their friend Nilesh, who is preparing for GATE, has used QuietPrep and feels more confident and less afraid. This is a personal account; exam performance has not been measured. QuietPrep currently supports interview-style communication practice, with GATE syllabus coverage and mock-exam scoring outside its scope. The [challenge article](https://dev.to/tushar_dhokane_b6452dc29d/quietprep-helping-my-friend-nilesh-approach-practice-with-more-confidence-2fo6) was published on 3 October 2026.
 
 [Watch the live local AI demo](docs/media/quietprep-demo.mp4). It uses synthetic data and shows a generated question, feedback, a retry, side-by-side changes, and a notes export.
 

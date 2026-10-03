@@ -1,6 +1,6 @@
 # QuietPrep challenge entry preparation
 
-QuietPrep was created on 3 October 2026 inside the current challenge window. The app is ready for local review. The entry has not been published or submitted.
+QuietPrep was created on 3 October 2026 inside the current challenge window. The [DEV submission](https://dev.to/tushar_dhokane_b6452dc29d/quietprep-helping-my-friend-nilesh-approach-practice-with-more-confidence-2fo6) was published on 3 October 2026 at 08:42:07 UTC (14:12:07 IST), before the challenge deadline. DEV article ID: `4791113`.
 
 The [challenge page](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01) gives the deadline as **5 October 2026 at 06:59 UTC**, which is **12:29 PM IST**. Participants must be 18+. The [general rules](https://dev.to/page/official-hackathon-rules) do not exclude India. Payment depends on winning; a valid entry alone does not earn cash.
 
@@ -8,11 +8,15 @@ The [challenge page](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)
 
 The project owner identifies their friend Nilesh as the beneficiary. Nilesh is preparing for GATE and was dealing with fear of rejection. The owner reports that he has used QuietPrep and now feels more confident and less afraid. No direct quote, practice transcript, measured exam outcome, or specific feature feedback has been supplied. The article keeps the app’s interview-style practice scope explicit.
 
-The author’s 18+ eligibility still needs confirmation. Further feedback about one question, review, and retry would make the account more specific; record only what actually happened.
+Entrants must meet the challenge’s 18+ eligibility requirement. Further feedback about one question, review, and retry would make the account more specific; record only what actually happened.
 
 Useful questions for the handover are: What made starting easier or harder? Was the suggestion specific enough to use? Did the second attempt change? What would they want next? Their feedback may reveal that a different role, focus, or clearer prompt is needed.
 
-## Publication steps
+## Publication checks
+
+The public DEV API confirms the title, publication timestamp, and all three required tags: `devchallenge`, `weekendchallenge`, and `hf26challenge`. The article contains the repository, synthetic video, image, and evaluation links, with the prize section ending at “Overall challenge.” Each linked project asset was checked and returned HTTP 200. These are publication checks; official eligibility and judging remain with the organizer.
+
+## Original publication steps
 
 1. Review the app at http://127.0.0.1:8767 and confirm eligibility and review the personal account above.
 2. Review `docs/submission.md` and check the beneficiary account and links.
