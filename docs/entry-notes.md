@@ -4,16 +4,18 @@ QuietPrep was created on 3 October 2026 inside the current challenge window. The
 
 The [challenge page](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01) gives the deadline as **5 October 2026 at 06:59 UTC**, which is **12:29 PM IST**. Participants must be 18+. The [general rules](https://dev.to/page/official-hackathon-rules) do not exclude India. Payment depends on winning; a valid entry alone does not earn cash.
 
-## Personal details still needed
+## Beneficiary account and remaining details
 
-Confirm that the author is 18 or older. Identify one real friend or loved one and the interview problem they want help with. Use a pseudonym in public if preferred. Ask them to try one question, one review, and one retry; record their actual observations without inventing a quote or result.
+The project owner identifies their friend Nilesh as the beneficiary. Nilesh is preparing for GATE and was dealing with fear of rejection. The owner reports that he has used QuietPrep and now feels more confident and less afraid. No direct quote, practice transcript, measured exam outcome, or specific feature feedback has been supplied. The article keeps the app’s interview-style practice scope explicit.
+
+The author’s 18+ eligibility still needs confirmation. Further feedback about one question, review, and retry would make the account more specific; record only what actually happened.
 
 Useful questions for the handover are: What made starting easier or harder? Was the suggestion specific enough to use? Did the second attempt change? What would they want next? Their feedback may reveal that a different role, focus, or clearer prompt is needed.
 
 ## Publication steps
 
-1. Review the app at http://127.0.0.1:8767 and resolve the personal details above.
-2. Review `docs/submission.md` and replace every bracketed placeholder.
+1. Review the app at http://127.0.0.1:8767 and confirm eligibility and review the personal account above.
+2. Review `docs/submission.md` and check the beneficiary account and links.
 3. Publish the source repository and a video demo. Exclude `.runtime/`, browser profiles, local logs, and personal practice notes. A loopback URL is not a public demo.
 4. Sign into DEV and use the [challenge submission template](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). Include `devchallenge`, `weekendchallenge`, and `hf26challenge` tags.
 5. Publish before the deadline and save the public DEV post URL.
