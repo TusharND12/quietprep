@@ -1,89 +1,286 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f6f0">
-  <title>QuietPrep — A little practice. A little more confidence.</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/style.css">
-  <script defer src="/app.js"></script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to practice</a>
-  <header class="header">
-    <a class="brand" href="/" aria-label="QuietPrep home"><img src="/favicon.svg" width="36" height="36" alt=""><span>quietprep<span class="brand-dot">.</span></span></a>
-    <div class="header-actions"><span class="privacy"><span class="dot"></span> A space just for you</span><button class="text-button" id="setup-open">Setup <span aria-hidden="true">↗</span></button></div>
-  </header>
-  <main id="main">
-    <section class="intro" aria-labelledby="title">
-      <div><p class="eyebrow">YOUR SMALL CORNER OF CONFIDENCE</p><h1 id="title">Good answers start<br>with a little <em>practice.</em></h1><p class="intro-text">A patient interview partner, right on your laptop.<br> One question. One useful nudge. Another try.</p></div>
-      <div class="intro-note"><span class="note-spark" aria-hidden="true">✳</span><p>You don’t need a<br>perfect answer.<br><strong>Just a first attempt.</strong></p><span class="note-line" aria-hidden="true"></span></div>
-    </section>
-    <div class="workspace">
-      <aside class="settings card">
-        <div class="section-heading"><span class="step-number">01</span><h2>Make it your practice</h2></div>
-        <p class="muted">A little context makes better questions.</p>
-        <form id="profile-form">
-          <label for="role">What role are you preparing for?</label>
-          <input id="role" name="role" maxlength="120" placeholder="e.g. Junior frontend developer" value="Junior frontend developer" required>
-          <fieldset><legend>What would you like to work on?</legend><div class="focus-options">
-            <label class="focus-option"><input type="radio" name="focus" value="behavioral" checked><span><b>Talking about yourself</b><small>Experiences, teamwork & challenges</small></span><span class="radio-mark" aria-hidden="true"></span></label>
-            <label class="focus-option"><input type="radio" name="focus" value="project"><span><b>Explaining a project</b><small>Your choices & what you learned</small></span><span class="radio-mark" aria-hidden="true"></span></label>
-            <label class="focus-option"><input type="radio" name="focus" value="technical"><span><b>Thinking through a problem</b><small>How you approach the technical stuff</small></span><span class="radio-mark" aria-hidden="true"></span></label>
-          </div></fieldset>
-          <label for="context">Anything your partner should know? <span class="optional">Optional</span></label>
-          <textarea id="context" name="context" maxlength="2500" rows="4" placeholder="A project you built, skills you’re learning, or a few lines from the job description…"></textarea>
-          <p class="input-note">Share only what you feel comfortable sharing.</p>
-          <button class="primary full" id="start-button" type="submit">Let’s practise <span aria-hidden="true">→</span></button>
-        </form>
-        <div class="local-note"><span aria-hidden="true">⌂</span><p><strong>Stays on your laptop.</strong><br>No account. No cloud API. No saved answers unless you download them.</p></div>
-      </aside>
-      <section class="practice card" aria-label="Interview practice">
-        <div class="practice-top"><div class="section-heading"><span class="step-number">02</span><h2>Your practice room</h2></div><span id="model-status" class="status-pill">Checking local AI…</span></div>
-        <div id="error" role="alert" hidden></div>
-        <div id="idle-view" class="idle-view">
-          <div class="quiet-art" aria-hidden="true"><div class="art-orbit"></div><div class="art-paper"><span></span><span></span><span></span><i>“</i></div><div class="art-star">✳</div></div>
-          <p class="eyebrow">NO PRESSURE. NO PERFECT SCORE.</p>
-          <h3>Take a breath.<br>We’ll take it one question at a time.</h3>
-          <p>Choose your focus, then let your local AI<br>find a good place to start.</p>
-          <button class="text-button" id="example-button">See how it feels <span aria-hidden="true">→</span></button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f6f0" />
+    <title>QuietPrep — A little practice. A little more confidence.</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to practice</a>
+    <header class="header">
+      <a class="brand" href="/" aria-label="QuietPrep home"
+        ><img src="/favicon.svg" width="36" height="36" alt="" /><span
+          >quietprep<span class="brand-dot">.</span></span
+        ></a
+      >
+      <div class="header-actions">
+        <span class="privacy"
+          ><span class="dot"></span> A space just for you</span
+        ><button class="text-button" id="setup-open">
+          Setup <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </header>
+    <main id="main">
+      <section class="intro" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">YOUR SMALL CORNER OF CONFIDENCE</p>
+          <h1 id="title">
+            Good answers start<br />with a little <em>practice.</em>
+          </h1>
+          <p class="intro-text">
+            A patient interview partner, right on your laptop.<br />
+            One question. One useful nudge. Another try.
+          </p>
         </div>
-        <div id="session-view" hidden>
-          <div class="question-meta"><span id="question-counter">QUESTION 01</span><span id="example-label" hidden>EXAMPLE · NOT LIVE AI</span><button class="text-button small" id="new-question">Different question ↻</button></div>
-          <h3 id="question" tabindex="-1"></h3>
-          <p id="why-this" class="why-this"></p>
-          <details class="thinking-hint"><summary>A little help getting started</summary><p id="starter"></p></details>
-          <form id="answer-form">
-            <label for="answer">Your answer <span id="attempt-label" class="optional">First attempt</span></label>
-            <textarea id="answer" maxlength="4000" rows="6" placeholder="Start with what happened, explain what you did, and tell us what you learned. It doesn’t have to be polished yet." minlength="20" required></textarea>
-            <div class="answer-bottom"><span id="word-count" class="input-note">0 words · take your time</span><button id="review-button" class="primary" type="submit">Give me a nudge <span aria-hidden="true">↗</span></button></div>
-          </form>
-          <section id="feedback" class="feedback" aria-label="Your coaching notes" hidden>
-            <div class="feedback-heading"><span class="eyebrow">A LITTLE REFLECTION</span><button class="text-button small" id="download">Download notes ↓</button></div>
-            <div class="feedback-block strength"><span class="feedback-symbol" aria-hidden="true">✦</span><div><h4>Keep this</h4><p id="strength"></p><blockquote id="evidence"></blockquote></div></div>
-            <div class="feedback-block"><span class="feedback-symbol" aria-hidden="true">↗</span><div><h4>Try this next</h4><p id="improvement"></p><p id="next-try" class="next-try"></p></div></div>
-            <div class="follow-up"><p class="eyebrow">SOMETHING TO THINK ABOUT</p><p id="follow-up"></p></div>
-            <div class="feedback-actions"><button class="primary" id="retry">Try my answer again ↻</button><button class="secondary" id="next">Next question →</button></div>
-            <p class="feedback-caveat">A practice partner, not a hiring verdict. Double-check technical advice.</p>
-          </section>
+        <div class="intro-note">
+          <span class="note-spark" aria-hidden="true">✳</span>
+          <p>
+            You don’t need a<br />perfect answer.<br /><strong
+              >Just a first attempt.</strong
+            >
+          </p>
+          <span class="note-line" aria-hidden="true"></span>
         </div>
-        <div id="busy" class="busy" role="status" hidden><span class="spinner" aria-hidden="true"></span><div><strong id="busy-title">Finding your next question…</strong><p>Your laptop is doing the thinking. This can take a minute.</p></div></div>
       </section>
-    </div>
-    <footer><p>Made for the first try, and the next one.</p><div><span>Open weights. A quieter kind of AI.</span><button id="clear-session" class="text-button small">Clear this session</button></div></footer>
-  </main>
-  <dialog id="setup-dialog" aria-labelledby="setup-title">
-    <div class="dialog-heading"><h2 id="setup-title">A little setup. Then it’s yours.</h2><button id="setup-close" class="text-button" aria-label="Close setup">✕</button></div>
-    <p>QuietPrep uses an open-weight model running on your own computer. Download it once; then practise without an internet connection.</p>
-    <h3>Linux: start everything together</h3><p>From the project folder, with Python 3.11 or later:</p><pre>python3 scripts/setup_local.py
-python3 scripts/run_local.py</pre><p class="muted">First setup downloads about 1.14 GB. No GPU required.</p>
-    <h3>Already using Ollama?</h3><pre>ollama pull qwen2.5:1.5b
+      <div class="workspace">
+        <aside class="settings card">
+          <div class="section-heading">
+            <span class="step-number">01</span>
+            <h2>Make it your practice</h2>
+          </div>
+          <p class="muted">A little context makes better questions.</p>
+          <form id="profile-form">
+            <label for="role">What role are you preparing for?</label>
+            <input
+              id="role"
+              name="role"
+              maxlength="120"
+              placeholder="e.g. Junior frontend developer"
+              value="Junior frontend developer"
+              required
+            />
+            <fieldset>
+              <legend>What would you like to work on?</legend>
+              <div class="focus-options">
+                <label class="focus-option"
+                  ><input
+                    type="radio"
+                    name="focus"
+                    value="behavioral"
+                    checked /><span
+                    ><b>Talking about yourself</b
+                    ><small>Experiences, teamwork & challenges</small></span
+                  ><span class="radio-mark" aria-hidden="true"></span
+                ></label>
+                <label class="focus-option"
+                  ><input type="radio" name="focus" value="project" /><span
+                    ><b>Explaining a project</b
+                    ><small>Your choices & what you learned</small></span
+                  ><span class="radio-mark" aria-hidden="true"></span
+                ></label>
+                <label class="focus-option"
+                  ><input type="radio" name="focus" value="technical" /><span
+                    ><b>Thinking through a problem</b
+                    ><small>How you approach the technical stuff</small></span
+                  ><span class="radio-mark" aria-hidden="true"></span
+                ></label>
+              </div>
+            </fieldset>
+            <label for="context"
+              >Anything your partner should know?
+              <span class="optional">Optional</span></label
+            >
+            <textarea
+              id="context"
+              name="context"
+              maxlength="2500"
+              rows="4"
+              placeholder="A project you built, skills you’re learning, or a few lines from the job description…"
+            ></textarea>
+            <p class="input-note">
+              Share only what you feel comfortable sharing.
+            </p>
+            <button class="primary full" id="start-button" type="submit">
+              Let’s practise <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <div class="local-note">
+            <span aria-hidden="true">⌂</span>
+            <p>
+              <strong>Stays on your laptop.</strong><br />No account. No cloud
+              API. No saved answers unless you download them.
+            </p>
+          </div>
+        </aside>
+        <section class="practice card" aria-label="Interview practice">
+          <div class="practice-top">
+            <div class="section-heading">
+              <span class="step-number">02</span>
+              <h2>Your practice room</h2>
+            </div>
+            <span id="model-status" class="status-pill"
+              >Checking local AI…</span
+            >
+          </div>
+          <div id="error" role="alert" hidden></div>
+          <div id="idle-view" class="idle-view">
+            <div class="quiet-art" aria-hidden="true">
+              <div class="art-orbit"></div>
+              <div class="art-paper">
+                <span></span><span></span><span></span><i>“</i>
+              </div>
+              <div class="art-star">✳</div>
+            </div>
+            <p class="eyebrow">NO PRESSURE. NO PERFECT SCORE.</p>
+            <h3>Take a breath.<br />We’ll take it one question at a time.</h3>
+            <p>
+              Choose your focus, then let your local AI<br />find a good place
+              to start.
+            </p>
+            <button class="text-button" id="example-button">
+              See how it feels <span aria-hidden="true">→</span>
+            </button>
+          </div>
+          <div id="session-view" hidden>
+            <div class="question-meta">
+              <span id="question-counter">QUESTION 01</span
+              ><span id="example-label" hidden>EXAMPLE · NOT LIVE AI</span
+              ><button class="text-button small" id="new-question">
+                Different question ↻
+              </button>
+            </div>
+            <h3 id="question" tabindex="-1"></h3>
+            <p id="why-this" class="why-this"></p>
+            <details class="thinking-hint">
+              <summary>A little help getting started</summary>
+              <p id="starter"></p>
+            </details>
+            <form id="answer-form">
+              <label for="answer"
+                >Your answer
+                <span id="attempt-label" class="optional"
+                  >First attempt</span
+                ></label
+              >
+              <textarea
+                id="answer"
+                maxlength="4000"
+                rows="6"
+                placeholder="Start with what happened, explain what you did, and tell us what you learned. It doesn’t have to be polished yet."
+                minlength="20"
+                required
+              ></textarea>
+              <div class="answer-bottom">
+                <span id="word-count" class="input-note"
+                  >0 words · take your time</span
+                ><button id="review-button" class="primary" type="submit">
+                  Give me a nudge <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+            </form>
+            <section
+              id="feedback"
+              class="feedback"
+              aria-label="Your coaching notes"
+              hidden
+            >
+              <div class="feedback-heading">
+                <span class="eyebrow">A LITTLE REFLECTION</span
+                ><button class="text-button small" id="download">
+                  Download notes ↓
+                </button>
+              </div>
+              <div class="feedback-block strength">
+                <span class="feedback-symbol" aria-hidden="true">✦</span>
+                <div>
+                  <h4>Keep this</h4>
+                  <p id="strength"></p>
+                  <blockquote id="evidence"></blockquote>
+                </div>
+              </div>
+              <div class="feedback-block">
+                <span class="feedback-symbol" aria-hidden="true">↗</span>
+                <div>
+                  <h4>Try this next</h4>
+                  <p id="improvement"></p>
+                  <p id="next-try" class="next-try"></p>
+                </div>
+              </div>
+              <div class="follow-up">
+                <p class="eyebrow">SOMETHING TO THINK ABOUT</p>
+                <p id="follow-up"></p>
+              </div>
+              <div class="feedback-actions">
+                <button class="primary" id="retry">Try my answer again ↻</button
+                ><button class="secondary" id="next">Next question →</button>
+              </div>
+              <p class="feedback-caveat">
+                A practice partner, not a hiring verdict. Double-check technical
+                advice.
+              </p>
+            </section>
+          </div>
+          <div id="busy" class="busy" role="status" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <strong id="busy-title">Finding your next question…</strong>
+              <p>Your laptop is doing the thinking. This can take a minute.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <p>Made for the first try, and the next one.</p>
+        <div>
+          <span>Open weights. A quieter kind of AI.</span
+          ><button id="clear-session" class="text-button small">
+            Clear this session
+          </button>
+        </div>
+      </footer>
+    </main>
+    <dialog id="setup-dialog" aria-labelledby="setup-title">
+      <div class="dialog-heading">
+        <h2 id="setup-title">A little setup. Then it’s yours.</h2>
+        <button id="setup-close" class="text-button" aria-label="Close setup">
+          ✕
+        </button>
+      </div>
+      <p>
+        QuietPrep uses an open-weight model running on your own computer.
+        Download it once; then practise without an internet connection.
+      </p>
+      <h3>Linux: start everything together</h3>
+      <p>From the project folder, with Python 3.11 or later:</p>
+      <pre>
+python3 scripts/setup_local.py
+python3 scripts/run_local.py</pre
+      >
+      <p class="muted">First setup downloads about 1.14 GB. No GPU required.</p>
+      <h3>Already using Ollama?</h3>
+      <pre>
+ollama pull qwen2.5:1.5b
 ollama serve
 # In another terminal:
-python3 server.py</pre><p>Use this option instead of the bundled runner. If Ollama is already running, skip <code>ollama serve</code>.</p>
-    <button id="check-model" class="primary full">Check my model connection ↻</button>
-    <p class="muted">No cloud fallback, API key, analytics, or automatic answer storage. Local model software may have its own logging settings. You control when to export notes.</p>
-  </dialog>
-</body>
+python3 server.py</pre
+      >
+      <p>
+        Use this option instead of the bundled runner. If Ollama is already
+        running, skip <code>ollama serve</code>.
+      </p>
+      <button id="check-model" class="primary full">
+        Check my model connection ↻
+      </button>
+      <p class="muted">
+        No cloud fallback, API key, analytics, or automatic answer storage.
+        Local model software may have its own logging settings. You control when
+        to export notes.
+      </p>
+    </dialog>
+  </body>
 </html>

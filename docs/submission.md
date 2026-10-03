@@ -4,7 +4,7 @@ published: false
 tags: devchallenge, weekendchallenge, hf26challenge
 ---
 
-*This is a draft submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01).*
+_This is a draft submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)._
 
 **Draft status:** The app and synthetic demo are built. Before publishing, add the real beneficiary story and confirm the author's age eligibility. The synthetic example is not a user testimonial.
 
