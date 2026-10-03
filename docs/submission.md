@@ -9,11 +9,11 @@ _This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Frie
 
 ## What I Built
 
-My friend Nilesh is preparing for the GATE exam. Alongside preparation, he was dealing with a fear of rejection.
+My friend Nilesh is preparing for the placement interview exam. Alongside preparation, he was dealing with a fear of rejection.
 
 Nilesh has used QuietPrep and now feels more confident and less afraid. That personal change matters to me. His experience is an encouraging starting point; any effect on exam performance remains unmeasured.
 
-QuietPrep is a private practice partner that runs on a laptop. It currently offers interview-style questions and practice explaining technical thinking. Its focus is answering, reflecting, and trying again. GATE syllabus coverage and mock-exam scoring are outside the current build.
+QuietPrep is a private practice partner that runs on a laptop. It currently offers interview-style questions and practice explaining technical thinking. Its focus is answering, reflecting, and trying again. Placement syllabus coverage and mock-exam scoring are outside the current build.
 
 The interaction is simple:
 

@@ -37,7 +37,7 @@ The [recorded browser session notes](evidence/browser-demo-notes.md) preserve an
 
 The interface keeps an honesty reminder beside every nudge: use what actually happened, and “I haven't measured that yet” is acceptable. Learners can reject a suggestion and record why. No generated answer is supplied for them to memorize, and no hiring or progress score is assigned. Technical and outcome claims still need a person's review.
 
-The project owner reports that their friend Nilesh has used QuietPrep and feels more confident and less afraid. Specific advice, revisions, and exam outcomes have not been independently evaluated. Further feedback should record which advice helped, what was wrong, and how he revised an answer. All reports linked above remain synthetic development fixtures.
+The project owner reports that their friend Nilesh has used QuietPrep and feels more confident and less afraid. Specific advice, revisions, and placement outcomes have not been independently evaluated. Further feedback should record which advice helped, what was wrong, and how he revised an answer. All reports linked above remain synthetic development fixtures.
 
 ## Why passage IDs replaced copied quotes
 

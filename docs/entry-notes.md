@@ -6,7 +6,7 @@ The [challenge page](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)
 
 ## Beneficiary account and remaining details
 
-The project owner identifies their friend Nilesh as the beneficiary. Nilesh is preparing for GATE and was dealing with fear of rejection. The owner reports that he has used QuietPrep and now feels more confident and less afraid. No direct quote, practice transcript, measured exam outcome, or specific feature feedback has been supplied. The article keeps the app’s interview-style practice scope explicit.
+The project owner identifies their friend Nilesh as the beneficiary. Nilesh is preparing for placement interviews and was dealing with fear of rejection. The owner reports that he has used QuietPrep and now feels more confident and less afraid. No direct quote, practice transcript, measured placement outcome, or specific feature feedback has been supplied. The article keeps the app’s interview-style practice scope explicit.
 
 Entrants must meet the challenge’s 18+ eligibility requirement. Further feedback about one question, review, and retry would make the account more specific; record only what actually happened.
 
